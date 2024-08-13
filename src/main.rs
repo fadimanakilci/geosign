@@ -24,6 +24,7 @@ lazy_static! {
 #[tokio::main]
 async fn main() -> Result<(), QdrantError> {
     create_collection().await?;
+    add_vectors().await?;
 
     Ok(())
 }
@@ -35,6 +36,23 @@ async fn create_collection() -> Result<(), QdrantError> {
                 .vectors_config(VectorParamsBuilder::new(4, Distance::Dot)),
         )
         .await?;
+
+    Ok(())
+}
+
+async fn add_vectors() -> Result<(), QdrantError> {
+    let points = vec![
+        PointStruct::new(1, vec![0.05, 0.61, 0.76, 0.74], [("city", "Berlin".into())]),
+        PointStruct::new(2, vec![0.19, 0.81, 0.75, 0.11], [("city", "London".into())]),
+        PointStruct::new(3, vec![0.36, 0.55, 0.47, 0.94], [("city", "Moscow".into())]),
+        // ..truncated
+    ];
+
+    let response = client
+        .upsert_points(UpsertPointsBuilder::new("test_collection", points).wait(true))
+        .await?;
+
+    dbg!(response);
 
     Ok(())
 }
