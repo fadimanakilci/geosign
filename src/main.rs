@@ -8,8 +8,6 @@
  * Created by Fadimana Kilci  <fadimekilci07@gmail.com>, August 2024
  */
 
-fn main() {
-    println!("Hello, world!");
 use qdrant_client::{Qdrant, QdrantError};
 use qdrant_client::qdrant::{CreateCollectionBuilder, Distance, VectorParamsBuilder, PointStruct, UpsertPointsBuilder};
 
@@ -23,4 +21,20 @@ lazy_static! {
     };
 }
 
+#[tokio::main]
+async fn main() -> Result<(), QdrantError> {
+    create_collection().await?;
+
+    Ok(())
+}
+
+async fn create_collection() -> Result<(), QdrantError> {
+    client
+        .create_collection(
+            CreateCollectionBuilder::new("test_collection")
+                .vectors_config(VectorParamsBuilder::new(4, Distance::Dot)),
+        )
+        .await?;
+
+    Ok(())
 }
