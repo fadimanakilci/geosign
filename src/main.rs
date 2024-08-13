@@ -9,7 +9,7 @@
  */
 
 use qdrant_client::{Qdrant, QdrantError};
-use qdrant_client::qdrant::{CreateCollectionBuilder, Distance, VectorParamsBuilder, PointStruct, UpsertPointsBuilder};
+use qdrant_client::qdrant::{CreateCollectionBuilder, Distance, VectorParamsBuilder, PointStruct, UpsertPointsBuilder, SearchPointsBuilder, ListCollectionsResponse};
 
 use lazy_static::lazy_static;
 
@@ -23,6 +23,7 @@ lazy_static! {
 
 #[tokio::main]
 async fn main() -> Result<(), QdrantError> {
+    // Create the vector database
     create_collection().await?;
     add_vectors().await?;
 
@@ -30,12 +31,20 @@ async fn main() -> Result<(), QdrantError> {
 }
 
 async fn create_collection() -> Result<(), QdrantError> {
-    client
-        .create_collection(
-            CreateCollectionBuilder::new("test_collection")
-                .vectors_config(VectorParamsBuilder::new(4, Distance::Dot)),
-        )
-        .await?;
+    let collections_list: Option<ListCollectionsResponse> = Some(client.list_collections().await?);
+
+    if collections_list.is_none() {
+        client
+            .create_collection(
+                CreateCollectionBuilder::new("test_collection")
+                    .vectors_config(VectorParamsBuilder::new(4, Distance::Dot)),
+            )
+            .await?;
+
+        add_vectors().await?;
+    } else {
+        dbg!(collections_list);
+    }
 
     Ok(())
 }
