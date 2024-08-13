@@ -10,4 +10,17 @@
 
 fn main() {
     println!("Hello, world!");
+use qdrant_client::{Qdrant, QdrantError};
+use qdrant_client::qdrant::{CreateCollectionBuilder, Distance, VectorParamsBuilder, PointStruct, UpsertPointsBuilder};
+
+use lazy_static::lazy_static;
+
+lazy_static! {
+    static ref client: Qdrant = {
+        // The Rust client uses Qdrant's GRPC interface
+        let mut _client = Qdrant::from_url("http://localhost:6334").build().unwrap();
+        _client
+    };
+}
+
 }
