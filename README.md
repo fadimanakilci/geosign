@@ -11,15 +11,6 @@ Make sure you have the following installed:
 - **Rust 1.8+**
 - **Docker 24.0+**
 
-### Installation
-
-Clone the repository and build the project:
-
-```bash
-git clone https://github.com/fadimanakilci/geosign.git
-cd geosign
-```
-
 ### Download and Run Qdrant
 
 Download the latest Qdrant image from Dockerhub:
@@ -34,6 +25,21 @@ Then, run the service:
 docker run -p 6333:6333 -p 6334:6334 \
     -v $(pwd)/qdrant_storage:/qdrant/storage:z \
     qdrant/qdrant
+```
+
+### Installation
+
+Clone the repository and build the project:
+
+```bash
+git clone https://github.com/fadimanakilci/geosign.git
+cd geosign
+```
+
+### Running the GeoSign
+
+```bash
+cargo run main 
 ```
 
 And you’re good to go! 🚀
