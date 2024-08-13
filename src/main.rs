@@ -25,7 +25,9 @@ lazy_static! {
 async fn main() -> Result<(), QdrantError> {
     // Create the vector database
     create_collection().await?;
-    add_vectors().await?;
+
+    // Running the query
+    query().await?;
 
     Ok(())
 }
@@ -62,6 +64,18 @@ async fn add_vectors() -> Result<(), QdrantError> {
         .await?;
 
     dbg!(response);
+
+    Ok(())
+}
+
+async fn query() -> Result<(), QdrantError> {
+    let search_result = client
+        .search_points(
+            SearchPointsBuilder::new("test_collection", [0.2, 0.1, 0.9, 0.7], 3).with_payload(true),
+        )
+        .await?;
+
+    dbg!(search_result);
 
     Ok(())
 }
