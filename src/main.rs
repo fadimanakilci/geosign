@@ -85,6 +85,37 @@ fn set_utc() {
 
     println!("Şu anki UTC+3 zamanı: {}", now);
 }
+
+async fn set_connect_db() -> Result<(), Error> {
+    // PostgreSQL bağlantısı
+    let (client_postgresql, connection) =
+        tokio_postgres::connect("postgresql://postgres:mydevpasswd000@78.186.223.18:5432/py_algida0", NoTls).await?;
+
+    // Bağlantıyı yönetmek için ayrı bir task
+    tokio::spawn(async move {
+        if let Err(e) = connection.await {
+            eprintln!("connection error: {}", e);
+        }
+    });
+
+    fetch_data(&client_postgresql).await?;
+
+    Ok(())
+}
+
+async fn fetch_data(client_postgresql: &Client) -> Result<(), Error> {
+    let rows = client_postgresql
+        .query("SELECT location_data_id, index, device_id, vehicle_id,\
+         user_id, m_code, mt_id, type::text, device_time::text, server_time::text, locale,\
+          coordinate, ignition_on, speed::text, distance::text, total_distance::text,\
+           engine_hours FROM public.location_data \
+           ORDER BY location_data_id DESC LIMIT 100", &[])
+        .await?;
+
+    // Global ROWS değişkenine atama yapıyoruz
+    let mut global_rows = data_rows.lock().unwrap();
+    *global_rows = Some(rows);
+
     Ok(())
 }
 
