@@ -254,7 +254,16 @@ async fn add_vectors() -> Result<(), QdrantError> {
 async fn query() -> Result<(), QdrantError> {
     let search_result = client
         .search_points(
-            SearchPointsBuilder::new("test_collection", [0.2, 0.1, 0.9, 0.7], 3).with_payload(true),
+            SearchPointsBuilder::new(
+                "test_collection",
+                [0.2, 0.1, 0.9, 0.7],
+                3)
+                .filter(Filter::all([Condition::matches(
+                    "city",
+                    "London".to_string(),
+                )]))
+                .with_payload(true)
+                .params(SearchParamsBuilder::default().exact(true)),
         )
         .await?;
 
