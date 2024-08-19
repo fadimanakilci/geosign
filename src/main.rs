@@ -62,12 +62,20 @@ struct Payload {
 
 #[tokio::main]
 async fn main() -> Result<(), QdrantError> {
+    // Config UTC+3
+    set_utc();
+
+    // Connecting PostgreSql
+    set_connect_db().await.unwrap();
+
     // Create the vector database
     create_collection().await?;
 
     // Running the query
     query().await?;
 
+    Ok(())
+}
 
 fn serialize_date_time<S>(datetime: &DateTime<FixedOffset>, serializer: S) -> Result<S::Ok, S::Error>
 where
