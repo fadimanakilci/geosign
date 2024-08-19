@@ -74,8 +74,11 @@ async fn main() -> Result<(), QdrantError> {
     // Create the vector database
     create_collection().await?;
 
-    // Running the query
-    query().await?;
+    // Running the test_collection query
+    // query().await?;
+
+    // Running the test_collection query
+    query_geo().await?;
 
     Ok(())
 }
@@ -274,6 +277,41 @@ async fn query() -> Result<(), QdrantError> {
                     "city",
                     "London".to_string(),
                 )]))
+                .with_payload(true)
+                .params(SearchParamsBuilder::default().exact(true)),
+        )
+        .await?;
+
+    dbg!(search_result);
+
+    Ok(())
+}
+
+// 37.850897, 32.457679
+// 37.864218, 32.455185
+async fn query_geo() -> Result<(), QdrantError> {
+    let filter = Filter::all([
+        Condition::geo_radius(
+            "coordinate",
+            GeoRadius {
+                center: Some(GeoPoint {
+                    lon: 32.455185,
+                    lat: 37.864218
+                }),
+                // metre
+                radius: 2000.0,
+            },
+        ),
+        // Condition::matches("city", "London".to_string()),
+    ]);
+
+    let search_result = client
+        .search_points(
+            SearchPointsBuilder::new(
+                "geo_collection",
+                [37.864218, 32.455185],
+                80)
+                .filter(filter)
                 .with_payload(true)
                 .params(SearchParamsBuilder::default().exact(true)),
         )
