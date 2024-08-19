@@ -68,6 +68,16 @@ async fn main() -> Result<(), QdrantError> {
     // Running the query
     query().await?;
 
+
+fn set_utc() {
+    // UTC+3 saat dilimi
+    let offset = FixedOffset::east(3 * 3600); // 3 saat doğu (3600 saniye = 1 saat)
+
+    // Örnek olarak şu anki zamanı UTC+3 olarak alıyoruz
+    let now: DateTime<FixedOffset> = chrono::Utc::now().with_timezone(&offset);
+
+    println!("Şu anki UTC+3 zamanı: {}", now);
+}
     Ok(())
 }
 
