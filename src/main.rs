@@ -9,17 +9,20 @@
  */
 use std::arch::aarch64::{int64x1_t, int8x16x2_t, int8x8_t};
 use std::collections::HashMap;
+use std::ptr::null;
 use std::str::FromStr;
 use std::sync::Mutex;
 use chrono::{DateTime, FixedOffset, Utc};
 use qdrant_client::{Qdrant, QdrantError};
-use qdrant_client::qdrant::{CreateCollectionBuilder, Distance, VectorParamsBuilder, PointStruct, UpsertPointsBuilder, SearchPointsBuilder, ListCollectionsResponse, Condition, Filter, SearchParamsBuilder, QueryResponse, Vector, Vectors, Value, PointId};
+use qdrant_client::qdrant::{CreateCollectionBuilder, Distance, VectorParamsBuilder, PointStruct, UpsertPointsBuilder, SearchPointsBuilder, ListCollectionsResponse, Condition, Filter, SearchParamsBuilder, QueryResponse, Vector, Vectors, Value, PointId, GeoRadius, GeoPoint};
 
 use lazy_static::lazy_static;
 use serde::{Serialize, Serializer};
+use serde_json::json;
 use serde_json::map::Values;
 use tokio_postgres::{Client, Error, NoTls, Row};
 use tokio_postgres::types::Date;
+use uuid::Uuid;
 
 lazy_static! {
     static ref client: Qdrant = {
@@ -97,7 +100,7 @@ fn set_utc() {
 async fn set_connect_db() -> Result<(), Error> {
     // PostgreSQL bağlantısı
     let (client_postgresql, connection) =
-        tokio_postgres::connect("postgresql://postgres:password@host:port/table_name", NoTls).await?;
+        tokio_postgres::connect("postgresql://name:password@host:port/table_name", NoTls).await?;
 
     // Bağlantıyı yönetmek için ayrı bir task
     tokio::spawn(async move {
@@ -160,8 +163,14 @@ async fn add_vectors() -> Result<(), QdrantError> {
     let mut points: Vec<PointStruct> = Vec::new();
     let mut payload_map: HashMap<String, Value> = HashMap::new();
 
+    let mut counter: i32 = 1;
+
     if let Some(ref rows) = *global_rows {
         for row in rows.iter() {
+
+            println!("Control counter: {}", counter);
+            counter += 1;
+
             let mut latitude: f32 = 0.0;
             let mut longitude: f32 = 0.0;
 
@@ -214,8 +223,8 @@ async fn add_vectors() -> Result<(), QdrantError> {
             payload_map.insert("m_code".to_string(), Value::from(row.get::<_, String>(5)));
             payload_map.insert("mt_id".to_string(), Value::from(row.get::<_, String>(6)));
             payload_map.insert("con_type".to_string(), Value::from(row.get::<_, String>(7)));
-            payload_map.insert("device_time".to_string(), Value::from(row.get::<_, String>(8))); // Tarihi string olarak ekliyoruz
-            payload_map.insert("server_time".to_string(), Value::from(row.get::<_, String>(9))); // Tarihi string olarak ekliyoruz
+            payload_map.insert("device_time".to_string(), Value::from(row.get::<_, String>(8)));
+            payload_map.insert("server_time".to_string(), Value::from(row.get::<_, String>(9)));
             payload_map.insert("locale".to_string(), Value::from(row.get::<_, String>(10)));
             payload_map.insert("coordinate".to_string(), Value::from(row.get::<_, String>(11)));
             payload_map.insert("ignition_on".to_string(), Value::from(row.get::<_, bool>(12)));
@@ -232,6 +241,8 @@ async fn add_vectors() -> Result<(), QdrantError> {
                 // vec![latitude, longitude],
                 vec![latitude, longitude],
                 payload_map.clone());
+
+            // println!("Control: {:?}", point);
 
             points.push(point);
         }
@@ -284,4 +295,3 @@ fn parse_coordinate(coordinate: String) -> Result<(f32, f32), QdrantError> {
         Err(QdrantError::ConversionError("Coordinate format is invalid".into()))
     }
 }
-
