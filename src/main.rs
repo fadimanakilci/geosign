@@ -97,7 +97,7 @@ fn set_utc() {
 async fn set_connect_db() -> Result<(), Error> {
     // PostgreSQL bağlantısı
     let (client_postgresql, connection) =
-        tokio_postgres::connect("postgresql://postgres:mydevpasswd000@78.186.223.18:5432/py_algida0", NoTls).await?;
+        tokio_postgres::connect("postgresql://postgres:password@host:port/table_name", NoTls).await?;
 
     // Bağlantıyı yönetmek için ayrı bir task
     tokio::spawn(async move {
@@ -224,7 +224,7 @@ async fn add_vectors() -> Result<(), QdrantError> {
             payload_map.insert("total_distance".to_string(), Value::from(numeric_value_total));
             payload_map.insert("engine_hours".to_string(), Value::from(row.get::<_, i32>(16) as i64));
 
-            let id: String = row.get::<usize, i64>(0).to_string();
+            let id: String = row.get::<usize, i32>(0).to_string();
             let point_id: PointId = PointId::from(id);
 
             let point = PointStruct::new(
