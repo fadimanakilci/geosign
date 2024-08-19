@@ -271,3 +271,17 @@ async fn query() -> Result<(), QdrantError> {
 
     Ok(())
 }
+
+fn parse_coordinate(coordinate: String) -> Result<(f32, f32), QdrantError> {
+    let parts: Vec<&str> = coordinate.split(',').collect();
+
+    if parts.len() == 2 {
+        let latitude: f32 = parts[0].trim().parse().map_err(|_| QdrantError::ConversionError("Invalid latitude".into()))?;
+        let longitude: f32 = parts[1].trim().parse().map_err(|_| QdrantError::ConversionError("Invalid longitude".into()))?;
+
+        Ok((latitude, longitude))
+    } else {
+        Err(QdrantError::ConversionError("Coordinate format is invalid".into()))
+    }
+}
+
