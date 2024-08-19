@@ -234,7 +234,8 @@ async fn add_vectors() -> Result<(), QdrantError> {
             payload_map.insert("engine_hours".to_string(), Value::from(row.get::<_, i32>(16) as i64));
 
             let id: String = row.get::<usize, i32>(0).to_string();
-            let point_id: PointId = PointId::from(id);
+            let uuid = Uuid::parse_str(&id).unwrap_or_else(|_| Uuid::new_v4());
+            let point_id: PointId = PointId::from(uuid.to_string());
 
             let point = PointStruct::new(
                 point_id,
