@@ -69,6 +69,13 @@ async fn main() -> Result<(), QdrantError> {
     query().await?;
 
 
+fn serialize_date_time<S>(datetime: &DateTime<FixedOffset>, serializer: S) -> Result<S::Ok, S::Error>
+where
+    S: Serializer,
+{
+    serializer.serialize_str(&datetime.to_rfc3339())
+}
+
 fn set_utc() {
     // UTC+3 saat dilimi
     let offset = FixedOffset::east(3 * 3600); // 3 saat doğu (3600 saniye = 1 saat)
