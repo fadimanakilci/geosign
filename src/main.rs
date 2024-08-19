@@ -91,11 +91,13 @@ fn set_utc() {
 async fn create_collection() -> Result<(), QdrantError> {
     let collections_list: Option<ListCollectionsResponse> = Some(client.list_collections().await?);
 
-    if collections_list.is_none() {
+    println!("Test: {}", collections_list.as_ref().map_or(false, |list| list.collections.len() >= 1));
+
+    if collections_list.is_none() || collections_list.as_ref().map_or(false, |list| list.collections.len() >= 1) {
         client
             .create_collection(
-                CreateCollectionBuilder::new("test_collection")
-                    .vectors_config(VectorParamsBuilder::new(4, Distance::Dot)),
+                CreateCollectionBuilder::new("geo_collection")
+                    .vectors_config(VectorParamsBuilder::new(2, Distance::Dot)),
             )
             .await?;
 
