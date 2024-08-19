@@ -187,29 +187,11 @@ async fn add_vectors() -> Result<(), QdrantError> {
                 }
             }
 
-            // // JSON formatında veriyi hazırla
-            // let point = QdrantPoint {
-            //     vector: [latitude, longitude],
-            //     payload: Payload {
-            //         id: row.get(0),
-            //         index: row.get(1),
-            //         device_id: row.get(2),
-            //         vehicle_id: row.get(3),
-            //         user_id: row.get(4),
-            //         m_code: row.get(5),
-            //         mt_id: row.get(6),
-            //         con_type: row.get(7),
-            //         device_time: DateTime::parse_from_rfc3339(row.get(8)).unwrap(),
-            //         server_time: DateTime::parse_from_rfc3339(row.get(9)).unwrap(),
-            //         locale: row.get(10),
-            //         coordinate: row.get(11),
-            //         ignition_on: row.get(12),
-            //         speed: row.get(13),
-            //         distance: row.get(14),
-            //         total_distance: row.get(15),
-            //         engine_hours: row.get(16),
-            //     },
-            // };
+            // GeoPoint formatında JSON oluşturun
+            let geo_point = json!({
+                "lat": latitude,
+                "lon": longitude
+            });
 
             let speed_text: String = row.get(13);
             let distance: String = row.get(14);
@@ -229,7 +211,9 @@ async fn add_vectors() -> Result<(), QdrantError> {
             payload_map.insert("device_time".to_string(), Value::from(row.get::<_, String>(8)));
             payload_map.insert("server_time".to_string(), Value::from(row.get::<_, String>(9)));
             payload_map.insert("locale".to_string(), Value::from(row.get::<_, String>(10)));
-            payload_map.insert("coordinate".to_string(), Value::from(row.get::<_, String>(11)));
+            // payload_map.insert("coordinate".to_string(), Value::from(row.get::<_, String>(11)));
+            // payload_map.insert("coordinate".to_string(), Value::from(geo_point.as_object().unwrap().clone()));
+            payload_map.insert("coordinate".to_string(), Value::from(geo_point));
             payload_map.insert("ignition_on".to_string(), Value::from(row.get::<_, bool>(12)));
             payload_map.insert("speed".to_string(), Value::from(numeric_value_speed));
             payload_map.insert("distance".to_string(), Value::from(numeric_value_distance));
@@ -242,7 +226,6 @@ async fn add_vectors() -> Result<(), QdrantError> {
 
             let point = PointStruct::new(
                 point_id,
-                // vec![latitude, longitude],
                 vec![latitude, longitude],
                 payload_map.clone());
 
