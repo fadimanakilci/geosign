@@ -82,7 +82,8 @@ struct Payload {
     engine_hours: i32,
 }
 
-#[tokio::main]
+// #[tokio::main]
+#[actix_web::main]
 async fn main() -> Result<(), QdrantError> {
     env_logger::init();
 
@@ -100,6 +101,9 @@ async fn main() -> Result<(), QdrantError> {
 
     // Running the test_collection query
     query_geo().await?;
+    let response = query_geo().await?;
+
+    send_to_map(response).await?;
 
     Ok(())
 }
@@ -293,7 +297,7 @@ async fn query() -> Result<(), QdrantError> {
 
 // 37.850897, 32.457679
 // 37.864218, 32.455185
-async fn query_geo() -> Result<(), QdrantError> {
+async fn query_geo() -> Result<SearchResponse, QdrantError> {
     let filter = Filter::all([
         Condition::geo_radius(
             "coordinate",
@@ -303,7 +307,7 @@ async fn query_geo() -> Result<(), QdrantError> {
                     lat: 37.864218
                 }),
                 // metre
-                radius: 2000.0,
+                radius: 10000.0,
             },
         ),
         // Condition::matches("city", "London".to_string()),
@@ -314,14 +318,84 @@ async fn query_geo() -> Result<(), QdrantError> {
             SearchPointsBuilder::new(
                 "geo_collection",
                 [37.864218, 32.455185],
-                80)
+                1000000)
                 .filter(filter)
                 .with_payload(true)
                 .params(SearchParamsBuilder::default().exact(true)),
         )
         .await?;
 
-    dbg!(search_result);
+    dbg!(&search_result);
+
+    Ok(search_result)
+}
+
+async fn send_to_map(response: SearchResponse) -> Result<(), QdrantError> {
+    println!("Coordinate Len: {}", response.result.len());
+    let coordinates: Vec<_> = response
+        .result
+        .iter()
+        .filter_map(|scored_point| {
+            // println!("Girdi {:?}", scored_point.payload);
+
+            if let Some(Value {
+                            kind: Some(StructValue(Struct { fields })),
+                        }) = scored_point.payload.get("coordinate")
+            {
+
+                // println!("Girdi 2");
+
+                let lat = match fields.get("lat")?.kind.as_ref()? {
+                    Kind::DoubleValue(val) => *val,
+                    _ => return None,
+                };
+                let lon = match fields.get("lon")?.kind.as_ref()? {
+                    Kind::DoubleValue(val) => *val,
+                    _ => return None,
+                };
+
+                Some(json!({"lat": lat, "lon": lon}))
+            } else {
+                None
+            }
+        })
+        .collect();
+
+    let data = json!({
+        "coordinates": coordinates,
+        "center": {"lat": 37.870112, "lon": 32.526084},
+        "radius": 1000.0
+    });
+
+    info!("Starting server at http://127.0.0.1:8080/locations");
+
+    // HttpServer::new(|| {
+    //     let data = web::Data::new(json!({
+    //         "coordinates": [
+    //             {"lat": 40.712776, "lon": -74.005974}, // New York City
+    //             {"lat": 34.052235, "lon": -118.243683}, // Los Angeles
+    //         ],
+    //         "radius": 1000
+    //     }));
+    //
+    //     App::new()
+    //         .app_data(data.clone()) // JSON verisini paylaşılabilir hale getiriyoruz
+    //         .route("/locations", web::get().to(get_locations)) // JSON verisi döndüren rota
+    //         .service(fs::Files::new("/", "./static").index_file("leaflet_map.html")) // Statik dosyalar
+    // })
+    //     .bind("127.0.0.1:8080")?
+    //     .run()
+    //     .await?;
+
+    HttpServer::new(move || {
+        App::new()
+            .app_data(web::Data::new(data.clone())) // JSON verisini paylaşılabilir hale getiriyoruz
+            .route("/locations", web::get().to(get_locations)) // Handler fonksiyonunu kullanıyoruz
+            .service(fs::Files::new("/", "./static").index_file("map_radius.html"))
+    })
+        .bind("127.0.0.1:8080")?
+        .run()
+        .await?;
 
     Ok(())
 }
