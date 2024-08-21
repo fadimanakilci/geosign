@@ -501,3 +501,8 @@ fn extract_lat(fields: &std::collections::HashMap<String, qdrant_client::qdrant:
         _ => None,
     }
 }
+
+async fn get_locations(data: web::Data<serde_json::Value>) -> impl Responder {
+    HttpResponse::Ok().json(data.get_ref())
+}
+
