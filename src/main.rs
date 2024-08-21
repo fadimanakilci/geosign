@@ -34,11 +34,21 @@ use tonic::transport::Channel;
 use uuid::Uuid;
 
 lazy_static! {
-    static ref client: Qdrant = {
+    static ref CLIENT: Qdrant = {
         // The Rust client uses Qdrant's GRPC interface
-        let mut _client = Qdrant::from_url("http://localhost:6334").build().unwrap();
+        let mut _client = Qdrant::from_url("http://localhost:6334").timeout(Duration::from_secs(3200)).build().unwrap();
         _client
     };
+
+    // static ref CLIENT: Qdrant = {
+    //     // tonic::transport::Channel üzerinden bir yapılandırma yaparak timeout ayarını ekleyin
+    //     let channel = Channel::from_static("http://localhost:6334")
+    //         .connect_timeout(Duration::from_secs(30)) // Timeout süresini 10 saniye olarak ayarladık
+    //         .timeout(Duration::from_secs(120)); // Genel timeout süresi (request başına)
+    //
+    //     // Qdrant istemcisini bu yapılandırılmış channel ile oluşturun
+    //     Qdrant::with_channel(channel)
+    // };
 
     static ref data_rows: Mutex<Option<Vec<Row>>> = Mutex::new(None);
 }
