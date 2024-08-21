@@ -493,3 +493,11 @@ fn parse_coordinate(coordinate: String) -> Result<(f32, f32), QdrantError> {
         Err(QdrantError::ConversionError("Coordinate format is invalid".into()))
     }
 }
+
+fn extract_lat(fields: &std::collections::HashMap<String, qdrant_client::qdrant::Value>) -> Option<f64> {
+    let kind = fields.get("lat")?.kind.as_ref()?;
+    match kind {
+        Kind::DoubleValue(val) => Some(*val),
+        _ => None,
+    }
+}
