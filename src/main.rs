@@ -12,16 +12,25 @@ use std::collections::HashMap;
 use std::ptr::null;
 use std::str::FromStr;
 use std::sync::Mutex;
+use std::time::{Duration, Instant};
+use actix_files as fs;
+use actix_web::{web, App, HttpResponse, HttpServer, Responder};
 use chrono::{DateTime, FixedOffset, Utc};
 use qdrant_client::{Qdrant, QdrantError};
-use qdrant_client::qdrant::{CreateCollectionBuilder, Distance, VectorParamsBuilder, PointStruct, UpsertPointsBuilder, SearchPointsBuilder, ListCollectionsResponse, Condition, Filter, SearchParamsBuilder, QueryResponse, Vector, Vectors, Value, PointId, GeoRadius, GeoPoint};
+use qdrant_client::qdrant::{CreateCollectionBuilder, Distance, VectorParamsBuilder, PointStruct, UpsertPointsBuilder, SearchPointsBuilder, ListCollectionsResponse, Condition, Filter, SearchParamsBuilder, QueryResponse, Vector, Vectors, Value, PointId, GeoRadius, GeoPoint, SearchResponse, Struct};
 
 use lazy_static::lazy_static;
+use log::info;
+use qdrant_client::qdrant::value::Kind;
+use qdrant_client::qdrant::value::Kind::StructValue;
 use serde::{Serialize, Serializer};
 use serde_json::json;
 use serde_json::map::Values;
+use sysinfo::System;
+use tokio::time::timeout;
 use tokio_postgres::{Client, Error, NoTls, Row};
 use tokio_postgres::types::Date;
+use tonic::transport::Channel;
 use uuid::Uuid;
 
 lazy_static! {
@@ -65,6 +74,8 @@ struct Payload {
 
 #[tokio::main]
 async fn main() -> Result<(), QdrantError> {
+    env_logger::init();
+
     // Config UTC+3
     set_utc();
 
