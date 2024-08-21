@@ -1,0 +1,59 @@
+<!--
+  ~ DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+  ~
+  ~ Copyright © August 2024 Fadimana Kilci - All Rights Reserved
+  ~ Unauthorized copying of this file, via any medium is strictly prohibited
+  ~ Proprietary and confidential
+  ~
+  ~ Created by Fadimana Kilci  <fadimekilci07@gmail.com>, August 2024
+  -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Location Visualization</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <style>
+        #map {
+            height: 600px;
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+<div id="map"></div>
+
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<script>
+    // Rust backend'den JSON verisini almak için fetch kullanılıyor
+    fetch('http://127.0.0.1:8080/locations')
+        .then(response => response.json())
+        .then(data => {
+            // Leaflet haritasını oluşturma
+            const map = L.map('map').setView([data.center.lat, data.center.lon], 10);
+
+            // Harita karolarını ekleme
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            }).addTo(map);
+
+            // Dinamik olarak JSON verisini kullanarak konumları ve radyus çemberlerini ekleme
+            L.circle([data.center.lat, data.center.lon], {
+                color: 'red',
+                fillColor: '#f03',
+                fillOpacity: 0.3,
+                radius: data.radius
+            }).addTo(map);
+
+            data.coordinates.forEach(coord => {
+                // Konum işaretleyicisi
+                L.marker([coord.lat, coord.lon]).addTo(map)
+                    .bindPopup(`Location: (${coord.lat}, ${coord.lon})`)
+                    .openPopup();
+            });
+        });
+</script>
+</body>
+</html>
