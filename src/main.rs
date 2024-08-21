@@ -360,6 +360,57 @@ async fn query_geo() -> Result<SearchResponse, QdrantError> {
     Ok(search_result)
 }
 
+async fn query_special_for_cagri() -> Result<SearchResponse, QdrantError> {
+    let mut system = System::new_all();
+    system.refresh_memory();
+
+    let before_used_mem = system.used_memory();
+    let start_time = Instant::now();
+
+    let filter = Filter::all([
+        Condition::geo_radius(
+            "coordinate",
+            GeoRadius {
+                center: Some(GeoPoint {
+                    lon: 32.526084,
+                    lat: 37.870112
+                }),
+                // metre
+                radius: 1000.0,
+            },
+        ),
+        // Condition::matches("city", "London".to_string()),
+    ]);
+
+    let search_result = CLIENT
+        .search_points(
+            SearchPointsBuilder::new(
+                "cagri_abi_icin_xd",
+                [37.870112, 32.526084],
+                1000000)
+                .filter(filter)
+                .with_payload(true)
+                // .with_vectors(false)
+                // .params(SearchParamsBuilder::default().exact(true)),
+        )
+        .await?;
+
+    let end_time = Instant::now();
+    system.refresh_memory();
+    let after_used_mem = system.used_memory();
+    let actual_mem_used = after_used_mem as i64 - before_used_mem as i64;
+
+    println!("\n\n ############################# PERFORMANCE STATS #############################");
+    println!("Time: {}ms", end_time.duration_since(start_time).as_millis());
+    println!("MemoryUsed: {} bytes", actual_mem_used);
+    println!("MemoryUsed: {} kb", actual_mem_used / 1024);
+    println!("MemoryUsed: {} mb", actual_mem_used / (1024 * 1024));
+
+    dbg!(&search_result.result.len());
+
+    Ok(search_result)
+}
+
 async fn send_to_map(response: SearchResponse) -> Result<(), QdrantError> {
     println!("Coordinate Len: {}", response.result.len());
     let coordinates: Vec<_> = response
