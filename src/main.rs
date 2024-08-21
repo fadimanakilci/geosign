@@ -205,13 +205,14 @@ async fn add_vectors() -> Result<(), QdrantError> {
     if let Some(ref rows) = *global_rows {
         for row in rows.iter() {
 
-            println!("Control counter: {}", counter);
-            counter += 1;
+            // println!("Control counter: {}", counter);
+            // counter += 1;
 
             let mut latitude: f32 = 0.0;
             let mut longitude: f32 = 0.0;
 
-            match parse_coordinate(row.get(11)) {
+            // match parse_coordinate(row.get(11)) {
+            match parse_coordinate(row.get(1)) {
                 Ok((lat, long)) => {
                     latitude = lat;
                     longitude = long;
@@ -227,32 +228,32 @@ async fn add_vectors() -> Result<(), QdrantError> {
                 "lon": longitude
             });
 
-            let speed_text: String = row.get(13);
-            let distance: String = row.get(14);
-            let total_distance: String = row.get(15);
-            let numeric_value_speed = f64::from_str(&speed_text).unwrap_or_default();
-            let numeric_value_distance = f64::from_str(&distance).unwrap_or_default();
-            let numeric_value_total = f64::from_str(&total_distance).unwrap_or_default();
+            // let speed_text: String = row.get(13);
+            // let distance: String = row.get(14);
+            // let total_distance: String = row.get(15);
+            // let numeric_value_speed = f64::from_str(&speed_text).unwrap_or_default();
+            // let numeric_value_distance = f64::from_str(&distance).unwrap_or_default();
+            // let numeric_value_total = f64::from_str(&total_distance).unwrap_or_default();
 
             payload_map.insert("id".to_string(), Value::from(row.get::<_, i32>(0) as i64));
-            payload_map.insert("index".to_string(), Value::from(row.get::<_, i32>(1) as i64));
-            payload_map.insert("device_id".to_string(), Value::from(row.get::<_, String>(2)));
-            payload_map.insert("vehicle_id".to_string(), Value::from(row.get::<_, String>(3)));
-            payload_map.insert("user_id".to_string(), Value::from(row.get::<_, String>(4)));
-            payload_map.insert("m_code".to_string(), Value::from(row.get::<_, String>(5)));
-            payload_map.insert("mt_id".to_string(), Value::from(row.get::<_, String>(6)));
-            payload_map.insert("con_type".to_string(), Value::from(row.get::<_, String>(7)));
-            payload_map.insert("device_time".to_string(), Value::from(row.get::<_, String>(8)));
-            payload_map.insert("server_time".to_string(), Value::from(row.get::<_, String>(9)));
-            payload_map.insert("locale".to_string(), Value::from(row.get::<_, String>(10)));
+            // payload_map.insert("index".to_string(), Value::from(row.get::<_, i32>(1) as i64));
+            // payload_map.insert("device_id".to_string(), Value::from(row.get::<_, String>(2)));
+            // payload_map.insert("vehicle_id".to_string(), Value::from(row.get::<_, String>(3)));
+            // payload_map.insert("user_id".to_string(), Value::from(row.get::<_, String>(4)));
+            // payload_map.insert("m_code".to_string(), Value::from(row.get::<_, String>(5)));
+            // payload_map.insert("mt_id".to_string(), Value::from(row.get::<_, String>(6)));
+            // payload_map.insert("con_type".to_string(), Value::from(row.get::<_, String>(7)));
+            // payload_map.insert("device_time".to_string(), Value::from(row.get::<_, String>(8)));
+            // payload_map.insert("server_time".to_string(), Value::from(row.get::<_, String>(9)));
+            // payload_map.insert("locale".to_string(), Value::from(row.get::<_, String>(10)));
             // payload_map.insert("coordinate".to_string(), Value::from(row.get::<_, String>(11)));
             // payload_map.insert("coordinate".to_string(), Value::from(geo_point.as_object().unwrap().clone()));
             payload_map.insert("coordinate".to_string(), Value::from(geo_point));
-            payload_map.insert("ignition_on".to_string(), Value::from(row.get::<_, bool>(12)));
-            payload_map.insert("speed".to_string(), Value::from(numeric_value_speed));
-            payload_map.insert("distance".to_string(), Value::from(numeric_value_distance));
-            payload_map.insert("total_distance".to_string(), Value::from(numeric_value_total));
-            payload_map.insert("engine_hours".to_string(), Value::from(row.get::<_, i32>(16) as i64));
+            // payload_map.insert("ignition_on".to_string(), Value::from(row.get::<_, bool>(12)));
+            // payload_map.insert("speed".to_string(), Value::from(numeric_value_speed));
+            // payload_map.insert("distance".to_string(), Value::from(numeric_value_distance));
+            // payload_map.insert("total_distance".to_string(), Value::from(numeric_value_total));
+            // payload_map.insert("engine_hours".to_string(), Value::from(row.get::<_, i32>(16) as i64));
 
             let id: String = row.get::<usize, i32>(0).to_string();
             let uuid = Uuid::parse_str(&id).unwrap_or_else(|_| Uuid::new_v4());
@@ -269,8 +270,6 @@ async fn add_vectors() -> Result<(), QdrantError> {
         }
     }
 
-    let response = client
-        .upsert_points(UpsertPointsBuilder::new("geo_collection", points).wait(true))
     println!("Control Points: {}", points.len());
 
     let response = CLIENT
