@@ -100,7 +100,6 @@ async fn main() -> Result<(), QdrantError> {
     // query().await?;
 
     // Running the test_collection query
-    query_geo().await?;
     let response = query_geo().await?;
 
     send_to_map(response).await?;
@@ -159,12 +158,12 @@ async fn fetch_data(client_postgresql: &Client) -> Result<(), Error> {
 }
 
 async fn create_collection() -> Result<(), QdrantError> {
-    let collections_list: Option<ListCollectionsResponse> = Some(client.list_collections().await?);
+    let collections_list: Option<ListCollectionsResponse> = Some(CLIENT.list_collections().await?);
 
     println!("Test: {}", collections_list.as_ref().map_or(false, |list| list.collections.len() >= 1));
 
     if collections_list.is_none() || collections_list.as_ref().map_or(false, |list| list.collections.len() >= 1) {
-        client
+        CLIENT
             .create_collection(
                 CreateCollectionBuilder::new("geo_collection")
                     .vectors_config(VectorParamsBuilder::new(2, Distance::Dot)),
@@ -262,7 +261,29 @@ async fn add_vectors() -> Result<(), QdrantError> {
 
     let response = client
         .upsert_points(UpsertPointsBuilder::new("geo_collection", points).wait(true))
+    println!("Control Points: {}", points.len());
+
+    let response = CLIENT
+        // .upsert_points(UpsertPointsBuilder::new("geo_collection", points).wait(true))
+        .upsert_points(UpsertPointsBuilder::new("cagri_abi_icin_xd", points).wait(true))
         .await?;
+
+    // let response = timeout(Duration::from_secs(12000), async {
+    //     CLIENT
+    //         .upsert_points(UpsertPointsBuilder::new("cagri_abi_icin_xd", points).wait(true))
+    //         .await
+    // }).await;
+
+    // let chunk_size = 1_000;
+    // for chunk in points.chunks(chunk_size) {
+    //     dbg!("Control counter: {}", counter);
+    //     counter += 1;
+    //
+    //     let response = CLIENT
+    //         .upsert_points(UpsertPointsBuilder::new("cagri_abi_icin_xd", chunk.to_vec()).wait(true))
+    //         .await?;
+    // }
+
 
     // // Veriyi Qdrant'a gönder
     // let response = http_client
@@ -275,7 +296,7 @@ async fn add_vectors() -> Result<(), QdrantError> {
 }
 
 async fn query() -> Result<(), QdrantError> {
-    let search_result = client
+    let search_result = CLIENT
         .search_points(
             SearchPointsBuilder::new(
                 "test_collection",
@@ -313,7 +334,7 @@ async fn query_geo() -> Result<SearchResponse, QdrantError> {
         // Condition::matches("city", "London".to_string()),
     ]);
 
-    let search_result = client
+    let search_result = CLIENT
         .search_points(
             SearchPointsBuilder::new(
                 "geo_collection",
