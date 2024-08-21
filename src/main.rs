@@ -174,7 +174,8 @@ async fn create_collection() -> Result<(), QdrantError> {
     if collections_list.is_none() || collections_list.as_ref().map_or(false, |list| list.collections.len() >= 1) {
         CLIENT
             .create_collection(
-                CreateCollectionBuilder::new("geo_collection")
+                // CreateCollectionBuilder::new("geo_collection")
+                CreateCollectionBuilder::new("cagri_abi_icin_xd")
                     .vectors_config(VectorParamsBuilder::new(2, Distance::Dot)),
             )
             .await?;
