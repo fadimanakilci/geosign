@@ -102,6 +102,8 @@ async fn main() -> Result<(), QdrantError> {
     // Running the test_collection query
     let response = query_geo().await?;
 
+    let response = query_special_for_cagri().await?;
+
     send_to_map(response).await?;
 
     Ok(())
@@ -142,12 +144,19 @@ async fn set_connect_db() -> Result<(), Error> {
 }
 
 async fn fetch_data(client_postgresql: &Client) -> Result<(), Error> {
+    // let rows = client_postgresql
+    //     .query("SELECT location_data_id, index, device_id, vehicle_id,\
+    //      user_id, m_code, mt_id, type::text, device_time::text, server_time::text, locale,\
+    //       coordinate, ignition_on, speed::text, distance::text, total_distance::text,\
+    //        engine_hours FROM public.location_data \
+    //        ORDER BY location_data_id DESC LIMIT 100", &[])
+    //     .await?;
+
     let rows = client_postgresql
-        .query("SELECT location_data_id, index, device_id, vehicle_id,\
-         user_id, m_code, mt_id, type::text, device_time::text, server_time::text, locale,\
-          coordinate, ignition_on, speed::text, distance::text, total_distance::text,\
-           engine_hours FROM public.location_data \
-           ORDER BY location_data_id DESC LIMIT 100", &[])
+        .query("SELECT location_data_id, coordinate \
+         FROM public.location_data \
+         ORDER BY location_data_id \
+         DESC LIMIT 1000000", &[])
         .await?;
 
     // Global ROWS değişkenine atama yapıyoruz
