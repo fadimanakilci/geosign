@@ -2,24 +2,24 @@
 
 ## 🚧 Getting Started
 
-Ready to dive in? Follow these simple steps to get your GeoSign up and running!
+Follow these simple steps to get GeoSign up and running!
 
 ### Prerequisites
 
-Make sure you have the following installed:
+Ensure you have the following installed:
 
 - **Rust 1.8+**
 - **Docker 24.0+**
 
 ### Download and Run Qdrant
 
-Download the latest Qdrant image from Dockerhub:
+First, download the latest Qdrant image from Dockerhub:
 
 ```bash
 docker pull qdrant/qdrant
 ```
 
-Then, run the service:
+Then, start the service:
 
 ```bash
 docker run -p 6333:6333 -p 6334:6334 \
@@ -37,12 +37,35 @@ cd geosign
 ```
 
 ### Running the GeoSign
+Start the application with:
 
 ```bash
 cargo run main 
 ```
 
-And you’re good to go! 🚀
+### 🚀 You're all set!
+<br><br>
+
+### Viewing JSON Data
+
+To view the JSON data, open your browser and go to:
+
+http://127.0.0.1:8080/locations
+
+![Locations JSON Data](doc/asset/locations_json.png)
+
+This page displays the response data retrieved from Qdrant.
+<br><br>
+
+### Viewing Locations on a Leaflet Map
+
+To view locations within a radius on a map, navigate to:
+
+http://127.0.0.1:8080
+
+![Locations JSON Data](doc/asset/leaflet.png)
+
+This page shows the locations displayed as markers on a Leaflet map.
 <br><br>
 
 ## 🤝 Contributing
